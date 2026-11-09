@@ -406,7 +406,7 @@ class _ProfilePageState extends State<ProfilePage> {
       case ThemeMode.dark:
         return 'Sombre';
       case ThemeMode.system:
-      return 'Auto';
+        return 'Auto';
     }
   }
 
@@ -471,10 +471,7 @@ class _EditPseudoDialogState extends State<_EditPseudoDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Annuler'),
         ),
-        TextButton(
-          onPressed: _submit,
-          child: const Text('Enregistrer'),
-        ),
+        TextButton(onPressed: _submit, child: const Text('Enregistrer')),
       ],
     );
   }

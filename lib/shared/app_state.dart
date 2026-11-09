@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/storage/local_storage.dart';
 
 class AppState extends ChangeNotifier {
-  AppState({required LocalStorage storage}) : _storage = storage {
+  AppState({required this._storage}) {
     _jwtToken = _storage.readToken();
     _loginEmail = _storage.readLoginEmail();
     _loginRequestToken = _storage.readLoginRequestToken();

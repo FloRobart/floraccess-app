@@ -1,4 +1,4 @@
-package com.example.floraccess_app
+package fr.florobart.floraccess
 
 import io.flutter.embedding.android.FlutterActivity
 

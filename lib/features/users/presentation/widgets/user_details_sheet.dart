@@ -87,16 +87,30 @@ class _Sheet extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.edit),
                     onPressed: () async {
-                      final result = await UserFormDialog.show(context, initial: user);
+                      final result = await UserFormDialog.show(
+                        context,
+                        initial: user,
+                      );
                       if (result == null) return;
                       result.remove('email');
-                      final res = await usersViewModel.updateUser(user.id.toString(), result);
-                      res.when(success: (_) => showSnack('Utilisateur mis à jour'), error: showSnack);
+                      final res = await usersViewModel.updateUser(
+                        user.id.toString(),
+                        result,
+                      );
+                      res.when(
+                        success: (_) => showSnack('Utilisateur mis à jour'),
+                        error: showSnack,
+                      );
                     },
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => UserDetailsSheet.deleteUser(context, user, usersViewModel, showSnack),
+                    onPressed: () => UserDetailsSheet.deleteUser(
+                      context,
+                      user,
+                      usersViewModel,
+                      showSnack,
+                    ),
                   ),
                 ],
               ),
@@ -106,7 +120,8 @@ class _Sheet extends StatelessWidget {
           _row('ID', Text(user.id.toString())),
           _row('Email', Text(user.email)),
           _row('Auth methods', Text(user.authMethodsId.toString())),
-          _row( 'Connecté',
+          _row(
+            'Connecté',
             Align(
               alignment: Alignment.centerLeft,
               child: Tooltip(
@@ -119,11 +134,14 @@ class _Sheet extends StatelessWidget {
               ),
             ),
           ),
-          _row('Email vérifié',
+          _row(
+            'Email vérifié',
             Align(
               alignment: Alignment.centerLeft,
               child: Tooltip(
-                message: user.isVerifiedEmail ? 'Email vérifié' : 'Email non vérifié',
+                message: user.isVerifiedEmail
+                    ? 'Email vérifié'
+                    : 'Email non vérifié',
                 child: Icon(
                   user.isVerifiedEmail ? Icons.verified : Icons.mail,
                   color: user.isVerifiedEmail ? Colors.green : Colors.orange,
@@ -163,11 +181,21 @@ class _Sheet extends StatelessWidget {
         '${date.hour.toString().padLeft(2, '0')}:'
         '${date.minute.toString().padLeft(2, '0')}';
   }
-  
+
   String _monthName(int month) {
     const months = [
-      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+      'Janvier',
+      'Février',
+      'Mars',
+      'Avril',
+      'Mai',
+      'Juin',
+      'Juillet',
+      'Août',
+      'Septembre',
+      'Octobre',
+      'Novembre',
+      'Décembre',
     ];
     return months[month - 1];
   }

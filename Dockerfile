@@ -1,42 +1,59 @@
-# Étape 1 : Builder Flutter Web
-FROM dart:stable AS builder
-WORKDIR /app
-COPY . .
+# Production image of the FlorAccess web application (administration panel).
+# Base images are pinned by digest so that a compromised tag cannot silently change the build.
+# Pulling from dhi.io requires "docker login dhi.io" with a Docker Hub account.
+#
+# Every FROM line names its image in full, without ARG: Dependabot does not read images
+# declared through ARG, and it updates identical FROM lines together in the same pull request.
 
-# Installer Flutter SDK (branche stable) et précharger le SDK web
-RUN apt-get update && \
-    apt-get install -y git curl unzip xz-utils ca-certificates && \
-    git clone --branch stable --depth 1 https://github.com/flutter/flutter.git /flutter && \
-    chmod -R a+rX /flutter && \
-    /flutter/bin/flutter --version && \
-    /flutter/bin/flutter precache --web
+# Step 1: Extract the Flutter version declared in pubspec.yaml
+# This stage is isolated so that bumping "version:" in pubspec.yaml keeps the Flutter layers cached
+FROM dhi.io/debian-base:trixie-dev@sha256:61025cea33d5910165ced8b33edd3f6b6bfe161e129174887936a1b9a1442b20 AS flutter-version
+COPY pubspec.yaml /pubspec.yaml
+RUN sed -n "/^environment:/,/^[^ ]/ s/^  flutter: *[\"']\{0,1\}\([0-9][0-9.]*\)[\"']\{0,1\} *\(#.*\)\{0,1\}$/\1/p" /pubspec.yaml > /flutter-version \
+    && test -s /flutter-version
 
-# Activer Flutter Web et mettre le PATH
-ENV PATH="/flutter/bin:/flutter/bin/cache/dart-sdk/bin:${PATH}"
-RUN flutter config --enable-web
+# Step 2: Build the Flutter web application
+# Same base image as step 1
+FROM dhi.io/debian-base:trixie-dev@sha256:61025cea33d5910165ced8b33edd3f6b6bfe161e129174887936a1b9a1442b20 AS builder
 
-# Tenter de mettre à jour automatiquement les dépendances majeures (peut résoudre des incompatibilités)
-RUN flutter pub upgrade --major-versions || true
-RUN flutter pub get --offline || flutter pub get
+ENV CI=true \
+    FLUTTER_SUPPRESS_ANALYTICS=true \
+    PUB_ENVIRONMENT=docker \
+    PATH="/flutter/bin:/flutter/bin/cache/dart-sdk/bin:${PATH}"
 
-# Build web
-RUN flutter build web --release
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git curl unzip xz-utils ca-certificates
 
-# Étape 2 : Image finale avec NGINX
-FROM nginx:alpine
+# Packages run their own code during the build: they must not run it as root
+RUN install -d -o nonroot -g nonroot /flutter /application
+USER nonroot
+ENV HOME=/home/nonroot
 
-# Remove default nginx website
-RUN rm -rf /usr/share/nginx/html/*
+# Install the exact Flutter version declared in pubspec.yaml
+COPY --from=flutter-version /flutter-version /flutter-version
+RUN git clone --branch "$(cat /flutter-version)" --depth 1 https://github.com/flutter/flutter.git /flutter \
+    && flutter precache --web
 
-# Copier le build Flutter web
-COPY --from=builder /app/build/web /usr/share/nginx/html
+WORKDIR /application
 
-# Optionnel : config nginx custom
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy dependency manifests first so source changes keep the dependency cache
+COPY --chown=nonroot:nonroot pubspec.yaml pubspec.lock ./
+RUN flutter pub get --enforce-lockfile
 
-# Ajout d'un utilisateur non-root avec UID/GID fixes
-RUN addgroup -g 1800 -S floraccessgroup && adduser -u 1800 -S floraccessuser -G floraccessgroup \
-    && mkdir -p /run/nginx /var/cache/nginx /var/run /var/log/nginx \
-    && chown -R floraccessuser:floraccessgroup /var/cache/nginx /var/run /var/log/nginx /run/nginx \
-    && chmod 0755 /run/nginx
-USER floraccessuser
+# Only what the web build needs: anything else in the repository stays out of the image
+COPY --chown=nonroot:nonroot assets ./assets
+COPY --chown=nonroot:nonroot lib ./lib
+COPY --chown=nonroot:nonroot web ./web
+
+# Without a CDN, the application only runs scripts it serves itself, which allows a strict CSP
+RUN flutter build web --release --no-web-resources-cdn
+
+# Step 3: Final image served by nginx
+# The Debian variant is preferred to the Alpine one because it contains neither a shell nor wget
+FROM dhi.io/nginx:1.30-debian13@sha256:30510655d924e2e36dd69815d852f2df43868c83007be3353ec0bb8f5e7b3ab0
+
+# Owned by root: the unprivileged nginx process can read these files but not change them
+COPY --from=builder --chown=0:0 /application/build/web /usr/share/nginx/html
+COPY --chown=0:0 nginx.conf /etc/nginx/conf.d/default.conf
+
+USER 65532:65532

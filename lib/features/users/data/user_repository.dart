@@ -39,10 +39,14 @@ class UserRepository {
         'offset': ((page - 1) * pageSize).toString(),
         if (search != null && search.isNotEmpty) 'search': search,
         if (isConnected != null) 'is_connected': isConnected.toString(),
-        if (isVerifiedEmail != null) 'is_verified_email': isVerifiedEmail.toString(),
+        if (isVerifiedEmail != null)
+          'is_verified_email': isVerifiedEmail.toString(),
       };
 
-      final userResponse = await _client.get('/admins/users', queryParams: userQuery);
+      final userResponse = await _client.get(
+        '/admins/users',
+        queryParams: userQuery,
+      );
       if (userResponse.statusCode < 200 || userResponse.statusCode >= 300) {
         return Failure('Impossible de récupérer les utilisateurs');
       }
@@ -52,12 +56,16 @@ class UserRepository {
       /* Parse users */
       List<User> users = [];
       if (userDecoded is List) {
-        users = userDecoded.whereType<Map<String, dynamic>>().map(User.fromJson).toList();
+        users = userDecoded
+            .whereType<Map<String, dynamic>>()
+            .map(User.fromJson)
+            .toList();
       }
 
       /* Fetch number of users for pagination */
       final userCountResponse = await _client.get('/admins/users/count');
-      if (userCountResponse.statusCode < 200 || userCountResponse.statusCode >= 300) {
+      if (userCountResponse.statusCode < 200 ||
+          userCountResponse.statusCode >= 300) {
         return Failure('Impossible de récupérer le nombre d\'utilisateurs');
       }
 
@@ -86,10 +94,7 @@ class UserRepository {
     try {
       final response = await _client.post(
         '/admins/user',
-        body: {
-          'email': email,
-          'pseudo': pseudo,
-        },
+        body: {'email': email, 'pseudo': pseudo},
       );
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -114,8 +119,7 @@ class UserRepository {
     Map<String, dynamic> payload,
   ) async {
     try {
-      final response =
-          await _client.put('/admins/user/$id', body: payload);
+      final response = await _client.put('/admins/user/$id', body: payload);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return Failure('Impossible de mettre à jour l\'utilisateur');
@@ -185,4 +189,3 @@ class UserRepository {
     }
   }
 }
-

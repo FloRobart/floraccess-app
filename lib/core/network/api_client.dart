@@ -6,8 +6,8 @@ class ApiClient {
   ApiClient({
     required this.baseUrl,
     required this.tokenProvider,
-    Future<void> Function()? onUnauthorized,
-  }) : _onUnauthorized = onUnauthorized;
+    this._onUnauthorized,
+  });
 
   final String baseUrl;
   final Future<String?> Function() tokenProvider;
@@ -69,9 +69,8 @@ class ApiClient {
 
   Uri _buildUri(String path, Map<String, String>? queryParams) {
     final normalized = path.startsWith('/') ? path : '/$path';
-    return Uri.parse(
-      '$baseUrl$normalized',
-    ).replace(queryParameters: queryParams);
+    return Uri.parse('$baseUrl$normalized')
+        .replace(queryParameters: queryParams);
   }
 
   Future<Map<String, String>> _headers() async {

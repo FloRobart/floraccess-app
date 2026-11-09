@@ -45,18 +45,18 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        email,
-        pseudo,
-        authMethodsId,
-        isConnected,
-        isVerifiedEmail,
-        lastLogin,
-        lastLogoutAt,
-        lastIp,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    email,
+    pseudo,
+    authMethodsId,
+    isConnected,
+    isVerifiedEmail,
+    lastLogin,
+    lastLogoutAt,
+    lastIp,
+    createdAt,
+    updatedAt,
+  ];
 }
 
 DateTime? _parseDate(dynamic value) {
