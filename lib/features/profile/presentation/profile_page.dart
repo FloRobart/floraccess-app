@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../auth/presentation/viewmodels/auth_view_model.dart';
+import '../../legal/presentation/pages/legal_notice_page.dart';
 import '../../../shared/app_state.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -279,6 +280,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                const LegalNoticeButton(),
                 if (_appVersion != null)
                   Text(
                     'Version : $_appVersion',

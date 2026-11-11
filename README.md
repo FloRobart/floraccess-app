@@ -12,6 +12,8 @@ Elle permet de :
 - Modifier un utilisateur (Email, pseudo)
 - Supprimer un utilisateur
 
+Les mentions légales et la politique de confidentialité de FlorAccess sont sur la page `/legal`, ouverte depuis le bouton « Mentions légales » de la page de profil, et lisible sans être connecté. Leur contenu est dans `lib/features/legal/legal_notice_content.dart` : le mettre à jour quand l'éditeur, l'hébergeur, le service d'envoi des emails, les données conservées par l'API ou leur durée de conservation changent.
+
 # Table des matières
 
 - [Configuration](#configuration)
