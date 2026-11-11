@@ -38,7 +38,6 @@ dependencies:
   go_router: 18.0.1
   http: 1.6.0
   shared_preferences: 2.5.5
-  google_fonts: 8.2.1
   json_annotation: 4.12.0
   equatable: 3.0.0
   package_info_plus: 10.2.1
@@ -72,6 +71,21 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
+
+  # Manrope is the font of the application. Embedded, so that the web application never downloads
+  # it from fonts.gstatic.com: the IP address of the visitors is not sent to Google, and the
+  # Content-Security-Policy (nginx.conf) does not have to allow this host.
+  # Same files as the ones the google_fonts package downloaded (license: assets/fonts/Manrope_LICENSE.txt).
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-Regular.ttf
+        - asset: assets/fonts/Manrope-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Manrope-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Manrope-Bold.ttf
+          weight: 700
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

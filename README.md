@@ -31,7 +31,7 @@ L'application lit sa configuration au démarrage dans le fichier `.env`, servi �
 
 ⚠️ **Ce fichier est servi à tous les visiteurs.** Ne jamais y mettre de secret.
 
-En production, le navigateur ne peut appeler que les adresses listées dans le `connect-src` de `nginx.conf` (`https://api.floraccess.florobart.fr`, et `https://fonts.gstatic.com` pour les polices de `google_fonts`). Une nouvelle adresse de l'API doit donc aussi y être ajoutée, puis publiée avec une nouvelle image. En local, `http://localhost` est toujours autorisé.
+En production, le navigateur ne peut appeler que les adresses listées dans le `connect-src` de `nginx.conf` (`https://api.floraccess.florobart.fr`). Une nouvelle adresse de l'API doit donc aussi y être ajoutée, puis publiée avec une nouvelle image. En local, `http://localhost` est toujours autorisé. La police Manrope est embarquée dans l'application (`assets/fonts/`) : aucune police n'est téléchargée chez Google.
 
 # Développement
 

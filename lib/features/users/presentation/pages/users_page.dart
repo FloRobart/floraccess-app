@@ -272,7 +272,7 @@ class _UsersTable extends StatelessWidget {
               ),
               DataCell(
                 Tooltip(
-                  message: u.isVerifiedEmail ? 'Connecté' : 'Non connecté',
+                  message: u.isConnected ? 'Connecté' : 'Non connecté',
                   child: Icon(
                     u.isConnected ? Icons.circle : Icons.circle_outlined,
                     color: u.isConnected ? Colors.green : Colors.grey,
@@ -281,7 +281,27 @@ class _UsersTable extends StatelessWidget {
                 ),
               ),
               DataCell(
-                Align(alignment: Alignment.centerLeft, child: Text(u.pseudo)),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (u.isLoginBlocked)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 6),
+                          child: Tooltip(
+                            message: 'Connexions bloquées',
+                            child: Icon(
+                              Icons.lock,
+                              color: Colors.red,
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                      Text(u.pseudo),
+                    ],
+                  ),
+                ),
                 onTap: () => onDetails(u),
               ),
               DataCell(

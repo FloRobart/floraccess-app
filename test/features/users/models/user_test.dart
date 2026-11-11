@@ -83,6 +83,42 @@ void main() {
       expect(user.isConnected, isFalse);
       expect(user.lastLogin, isNull);
       expect(user.lastIp, isNull);
+      expect(user.loginBlockedUntil, isNull);
+    });
+
+    test('reads the end of the block of the logins', () {
+      final user = User.fromJson({
+        ...userJson,
+        'login_blocked_until': '2026-10-16T10:30:00.000Z',
+      });
+
+      expect(user.loginBlockedUntil, DateTime.utc(2026, 10, 16, 10, 30));
+    });
+  });
+
+  group('User.isLoginBlocked', () {
+    /// Builds a user whose logins are blocked until [blockEnd].
+    User userBlockedUntil(DateTime blockEnd) {
+      return User.fromJson({
+        ...userJson,
+        'login_blocked_until': blockEnd.toUtc().toIso8601String(),
+      });
+    }
+
+    test('is false when the logins were never blocked', () {
+      expect(User.fromJson(userJson).isLoginBlocked, isFalse);
+    });
+
+    test('is true until the end of the block', () {
+      final blockEnd = DateTime.now().add(const Duration(hours: 1));
+
+      expect(userBlockedUntil(blockEnd).isLoginBlocked, isTrue);
+    });
+
+    test('is false once the block is over, without any action', () {
+      final blockEnd = DateTime.now().subtract(const Duration(hours: 1));
+
+      expect(userBlockedUntil(blockEnd).isLoginBlocked, isFalse);
     });
   });
 
@@ -95,6 +131,15 @@ void main() {
       final renamedUser = User.fromJson({...userJson, 'pseudo': 'renamed'});
 
       expect(renamedUser, isNot(User.fromJson(userJson)));
+    });
+
+    test('a different block of the logins makes two users different', () {
+      final blockedUser = User.fromJson({
+        ...userJson,
+        'login_blocked_until': '2026-10-16T10:30:00.000Z',
+      });
+
+      expect(blockedUser, isNot(User.fromJson(userJson)));
     });
   });
 }

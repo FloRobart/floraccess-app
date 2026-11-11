@@ -13,6 +13,7 @@ class User extends Equatable {
     this.lastIp,
     this.createdAt,
     this.updatedAt,
+    this.loginBlockedUntil,
   });
 
   final int id;
@@ -27,6 +28,19 @@ class User extends Equatable {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  /// End of the block of the logins, set by the block link of a login code
+  /// email or after too many codes sent without a successful login.
+  final DateTime? loginBlockedUntil;
+
+  /// Tells if the logins of the user are blocked right now: a block ends by
+  /// itself, so a date in the past means that the user can log in again.
+  bool get isLoginBlocked {
+    final blockEnd = loginBlockedUntil;
+    if (blockEnd == null) return false;
+
+    return blockEnd.isAfter(DateTime.now());
+  }
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: _asInt(json['id']),
@@ -40,6 +54,7 @@ class User extends Equatable {
       lastIp: json['last_ip']?.toString(),
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
+      loginBlockedUntil: _parseDate(json['login_blocked_until']),
     );
   }
 
@@ -56,6 +71,7 @@ class User extends Equatable {
     lastIp,
     createdAt,
     updatedAt,
+    loginBlockedUntil,
   ];
 }
 
