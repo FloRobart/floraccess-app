@@ -1,6 +1,5 @@
 import 'package:floraccess_app/config.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/network/api_client.dart';
@@ -17,8 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final storage = await LocalStorage.init();
   final appState = AppState(storage: storage);
-  await dotenv.load(fileName: '.env');
-  Config.load();
+  await Config.load();
   final apiClient = ApiClient(
     baseUrl: Config.dataUrl,
     tokenProvider: () async => appState.jwtToken,

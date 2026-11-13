@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/debug_log.dart';
 import '../../../core/utils/result.dart';
 import '../../users/models/user.dart';
 
@@ -10,6 +9,26 @@ class AuthRepository {
   AuthRepository(this._client);
 
   final ApiClient _client;
+
+  /// Explains why the API refused to send a login code, from the status of its answer.
+  static String _loginRequestErrorMessage(int statusCode) =>
+      switch (statusCode) {
+        400 => 'Adresse email invalide',
+        403 => 'Les connexions sont temporairement bloquées pour ce compte',
+        429 => 'Trop de demandes : patientez avant de demander un nouveau code',
+        501 => 'La méthode de connexion de ce compte n\'est pas disponible',
+        503 => 'Service momentanément indisponible, réessayez plus tard',
+        _ => 'Impossible d\'envoyer le code, réessayez plus tard',
+      };
+
+  /// Explains why the API refused the login code, from the status of its answer.
+  static String _loginConfirmErrorMessage(int statusCode) =>
+      switch (statusCode) {
+        400 || 401 => 'Code invalide ou expiré',
+        403 => 'Les connexions sont temporairement bloquées pour ce compte',
+        429 => 'Trop d\'essais : demandez un nouveau code',
+        _ => 'Connexion impossible, réessayez plus tard',
+      };
 
   Future<Result<String>> loginRequest(String email) async {
     try {
@@ -21,9 +40,9 @@ class AuthRepository {
         final decoded = jsonDecode(response.body) as Map<String, dynamic>;
         return Success(decoded['token'] as String);
       }
-      return Failure('Email non reconnu');
+      return Failure(_loginRequestErrorMessage(response.statusCode));
     } catch (e, st) {
-      debugPrint('loginRequest error: $e\n$st');
+      logErrorInDebug('loginRequest', e, st);
       return Failure('Erreur réseau inattendue');
     }
   }
@@ -42,9 +61,9 @@ class AuthRepository {
         final decoded = jsonDecode(response.body) as Map<String, dynamic>;
         return Success(decoded['jwt'] as String);
       }
-      return Failure('Code invalide');
+      return Failure(_loginConfirmErrorMessage(response.statusCode));
     } catch (e, st) {
-      debugPrint('loginConfirm error: $e\n$st');
+      logErrorInDebug('loginConfirm', e, st);
       return Failure('Erreur réseau inattendue');
     }
   }
@@ -57,7 +76,7 @@ class AuthRepository {
       }
       return Failure('Impossible de déconnecter les sessions');
     } catch (e, st) {
-      debugPrint('logoutAll error: $e\n$st');
+      logErrorInDebug('logoutAll', e, st);
       return Failure('Erreur réseau inattendue');
     }
   }
@@ -71,7 +90,7 @@ class AuthRepository {
       }
       return Failure('Profil introuvable');
     } catch (e, st) {
-      debugPrint('fetchProfile error: $e\n$st');
+      logErrorInDebug('fetchProfile', e, st);
       return Failure('Erreur réseau inattendue');
     }
   }
@@ -103,7 +122,7 @@ class AuthRepository {
       }
       return Failure('Impossible de mettre à jour le pseudo');
     } catch (e, st) {
-      debugPrint('updatePseudo error: $e\n$st');
+      logErrorInDebug('updatePseudo', e, st);
       return Failure('Erreur réseau inattendue');
     }
   }

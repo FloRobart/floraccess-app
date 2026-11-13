@@ -49,6 +49,45 @@ class UserDetailsSheet {
     final res = await usersViewModel.deleteUser(user.id.toString());
     res.when(success: (_) => showSnack('Supprimé'), error: showSnack);
   }
+
+  /// Unblocks the logins of the user, after a confirmation, then closes the
+  /// sheet: the list of the users is reloaded with his new state.
+  static Future<void> unblockUserLogin(
+    BuildContext context,
+    User user,
+    UsersViewModel usersViewModel,
+    void Function(String) showSnack,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Débloquer les connexions ?'),
+        content: Text(
+          '${user.email} pourra de nouveau demander un code de connexion.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Débloquer'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final result = await usersViewModel.unblockUserLogin(user.id.toString());
+    result.when(
+      success: (_) {
+        if (context.mounted) Navigator.of(context).pop();
+        showSnack('Connexions débloquées');
+      },
+      error: showSnack,
+    );
+  }
 }
 
 class _Sheet extends StatelessWidget {
@@ -64,7 +103,8 @@ class _Sheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    /* A bottom sheet takes at most 9/16 of the screen: on a small phone, its rows are scrolled instead of overflowing */
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -87,16 +127,30 @@ class _Sheet extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.edit),
                     onPressed: () async {
-                      final result = await UserFormDialog.show(context, initial: user);
+                      final result = await UserFormDialog.show(
+                        context,
+                        initial: user,
+                      );
                       if (result == null) return;
                       result.remove('email');
-                      final res = await usersViewModel.updateUser(user.id.toString(), result);
-                      res.when(success: (_) => showSnack('Utilisateur mis à jour'), error: showSnack);
+                      final res = await usersViewModel.updateUser(
+                        user.id.toString(),
+                        result,
+                      );
+                      res.when(
+                        success: (_) => showSnack('Utilisateur mis à jour'),
+                        error: showSnack,
+                      );
                     },
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => UserDetailsSheet.deleteUser(context, user, usersViewModel, showSnack),
+                    onPressed: () => UserDetailsSheet.deleteUser(
+                      context,
+                      user,
+                      usersViewModel,
+                      showSnack,
+                    ),
                   ),
                 ],
               ),
@@ -106,7 +160,8 @@ class _Sheet extends StatelessWidget {
           _row('ID', Text(user.id.toString())),
           _row('Email', Text(user.email)),
           _row('Auth methods', Text(user.authMethodsId.toString())),
-          _row( 'Connecté',
+          _row(
+            'Connecté',
             Align(
               alignment: Alignment.centerLeft,
               child: Tooltip(
@@ -119,11 +174,14 @@ class _Sheet extends StatelessWidget {
               ),
             ),
           ),
-          _row('Email vérifié',
+          _row(
+            'Email vérifié',
             Align(
               alignment: Alignment.centerLeft,
               child: Tooltip(
-                message: user.isVerifiedEmail ? 'Email vérifié' : 'Email non vérifié',
+                message: user.isVerifiedEmail
+                    ? 'Email vérifié'
+                    : 'Email non vérifié',
                 child: Icon(
                   user.isVerifiedEmail ? Icons.verified : Icons.mail,
                   color: user.isVerifiedEmail ? Colors.green : Colors.orange,
@@ -132,6 +190,7 @@ class _Sheet extends StatelessWidget {
               ),
             ),
           ),
+          _row('Connexions', _loginBlockState(context)),
           _row('Dernière IP', Text(user.lastIp ?? '-')),
           _row('Connexion', Text(_formatDate(user.lastLogin))),
           _row('Déconnexion', Text(_formatDate(user.lastLogoutAt))),
@@ -139,6 +198,31 @@ class _Sheet extends StatelessWidget {
           _row('Mis à jour le', Text(_formatDate(user.updatedAt))),
         ],
       ),
+    );
+  }
+
+  /// Shows if the user can log in, and offers to unblock his logins when they
+  /// are blocked.
+  Widget _loginBlockState(BuildContext context) {
+    if (!user.isLoginBlocked) return const Text('Autorisées');
+
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 8,
+      children: [
+        const Icon(Icons.lock, color: Colors.red, size: 16),
+        Text('Bloquées jusqu\'au ${_formatDate(user.loginBlockedUntil)}'),
+        TextButton.icon(
+          icon: const Icon(Icons.lock_open),
+          label: const Text('Débloquer'),
+          onPressed: () => UserDetailsSheet.unblockUserLogin(
+            context,
+            user,
+            usersViewModel,
+            showSnack,
+          ),
+        ),
+      ],
     );
   }
 
@@ -157,17 +241,29 @@ class _Sheet extends StatelessWidget {
   String _formatDate(DateTime? date) {
     if (date == null) return '-';
     /* format to DD Mounth YYYY HH:MM */
-    return '${date.day.toString().padLeft(2, '0')} '
-        '${_monthName(date.month)} '
-        '${date.year} '
-        '${date.hour.toString().padLeft(2, '0')}:'
-        '${date.minute.toString().padLeft(2, '0')}';
+    /* The API gives the dates in UTC: they are shown in the time zone of the administrator */
+    final localDate = date.toLocal();
+    return '${localDate.day.toString().padLeft(2, '0')} '
+        '${_monthName(localDate.month)} '
+        '${localDate.year} '
+        '${localDate.hour.toString().padLeft(2, '0')}:'
+        '${localDate.minute.toString().padLeft(2, '0')}';
   }
-  
+
   String _monthName(int month) {
     const months = [
-      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+      'Janvier',
+      'Février',
+      'Mars',
+      'Avril',
+      'Mai',
+      'Juin',
+      'Juillet',
+      'Août',
+      'Septembre',
+      'Octobre',
+      'Novembre',
+      'Décembre',
     ];
     return months[month - 1];
   }

@@ -118,6 +118,14 @@ class UsersViewModel extends ChangeNotifier {
     return result;
   }
 
+  Future<Result<User>> unblockUserLogin(String id) async {
+    _setLoading(true);
+    final result = await _repository.unblockUserLogin(id);
+    _setLoading(false);
+    result.when(success: (_) => load(), error: (_) {});
+    return result;
+  }
+
   Future<Result<void>> deleteUser(String id) async {
     _setLoading(true);
     final result = await _repository.deleteUser(id);

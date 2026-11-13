@@ -108,7 +108,8 @@ class _UserFormDialogState extends State<UserFormDialog> {
               Navigator.of(context).pop({
                 'email': _emailCtrl.text.trim(),
                 'pseudo': _pseudoCtrl.text.trim(),
-                'auth_methods_id': isEdit && _authMethodCtrl.text.trim().isNotEmpty
+                'auth_methods_id':
+                    isEdit && _authMethodCtrl.text.trim().isNotEmpty
                     ? int.tryParse(_authMethodCtrl.text.trim())
                     : null,
                 'is_connected': isEdit ? _connected : null,

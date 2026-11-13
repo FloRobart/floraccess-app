@@ -56,28 +56,30 @@ class _UsersPageState extends State<UsersPage> {
             builder: (context, _) {
               final profile = widget.authViewModel.profile;
               final displayName = profile?.pseudo ?? profile?.email ?? '';
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: InkWell(
-                    onTap: () => context.go('/profile'),
-                    borderRadius: BorderRadius.circular(24),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Row(
-                        children: [
-                          if (displayName.isNotEmpty)
-                            Text(displayName),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.person),
-                        ],
-                      ),
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: InkWell(
+                  onTap: () => context.go('/profile'),
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Row(
+                      children: [
+                        if (displayName.isNotEmpty) Text(displayName),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.person),
+                      ],
                     ),
                   ),
-                );
+                ),
+              );
             },
           ),
         ],
@@ -186,9 +188,8 @@ class _UsersPageState extends State<UsersPage> {
 
   void _showSnack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -271,7 +272,7 @@ class _UsersTable extends StatelessWidget {
               ),
               DataCell(
                 Tooltip(
-                  message: u.isVerifiedEmail ? 'Connecté' : 'Non connecté',
+                  message: u.isConnected ? 'Connecté' : 'Non connecté',
                   child: Icon(
                     u.isConnected ? Icons.circle : Icons.circle_outlined,
                     color: u.isConnected ? Colors.green : Colors.grey,
@@ -280,7 +281,27 @@ class _UsersTable extends StatelessWidget {
                 ),
               ),
               DataCell(
-                Align(alignment: Alignment.centerLeft, child: Text(u.pseudo)),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (u.isLoginBlocked)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 6),
+                          child: Tooltip(
+                            message: 'Connexions bloquées',
+                            child: Icon(
+                              Icons.lock,
+                              color: Colors.red,
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                      Text(u.pseudo),
+                    ],
+                  ),
+                ),
                 onTap: () => onDetails(u),
               ),
               DataCell(
@@ -381,7 +402,9 @@ class _Pagination extends StatelessWidget {
           onPressed: current > 1 ? () => onChanged(current - 1) : null,
           icon: const Icon(Icons.chevron_left),
         ),
-        Text('${(current-1)*pageSize + 1} - ${min(current*pageSize, totalCount)} / $totalCount'),
+        Text(
+          '${(current - 1) * pageSize + 1} - ${min(current * pageSize, totalCount)} / $totalCount',
+        ),
         IconButton(
           onPressed: current < totalPages ? () => onChanged(current + 1) : null,
           icon: const Icon(Icons.chevron_right),

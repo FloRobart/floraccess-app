@@ -1,8 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- The JWT of the session is stored in the preferences of the application: no backup may copy it out of the phone.
+         allowBackup stops the cloud and adb backups, dataExtractionRules also stops the transfer to a new device (Android 12 and later). -->
     <application
-        android:label="floraccess_app"
+        android:label="FlorAccess"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"

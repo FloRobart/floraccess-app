@@ -1,19 +1,13 @@
+# Development only: serves the local web build ("flutter build web") with the nginx configuration
+# of production, so that its headers (Content-Security-Policy...) are tried before a release.
+
 services:
-  # Floraccess App Web #
-  floraccess-app-web:
+  floraccess-app:
     image: nginx:stable-alpine
-    working_dir: /app
-    environment:
-      - FLUTTER_ENV=dev
     ports:
-      - ${APP_PORT:-}:80
+      - ${APP_PORT:-}:8080
     volumes:
-      - ./build/web:/usr/share/nginx/html/
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./build/web:/usr/share/nginx/html/:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./.env:/usr/share/nginx/html/assets/.env:ro
     command: ["nginx", "-g", "daemon off;"]
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://floraccess-app-web:80/ || exit 1"]
-      interval: 600s
-      timeout: 10s
-      retries: 5

@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
+            VALUE "CompanyName", "fr.florobart" "\0"
             VALUE "FileDescription", "floraccess_app" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "floraccess_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 fr.florobart. All rights reserved." "\0"
             VALUE "OriginalFilename", "floraccess_app.exe" "\0"
             VALUE "ProductName", "floraccess_app" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
