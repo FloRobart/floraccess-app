@@ -60,9 +60,8 @@ class _CustomEmailDialogState extends State<CustomEmailDialog> {
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState?.validate() ?? false) {
-              Navigator.of(
-                context,
-              ).pop((_subjectCtrl.text.trim(), _contentCtrl.text.trim()));
+              Navigator.of(context)
+                  .pop((_subjectCtrl.text.trim(), _contentCtrl.text.trim()));
             }
           },
           child: const Text('Envoyer'),

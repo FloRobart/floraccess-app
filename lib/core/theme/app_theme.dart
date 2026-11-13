@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static const Color seedColor = Color(0xFF721414);
+
+  /// Embedded in the application (pubspec.yaml), never downloaded at runtime.
+  static const String fontFamily = 'Manrope';
 
   static ThemeData light() {
     final base = ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
       useMaterial3: true,
+      fontFamily: fontFamily,
     );
     return base.copyWith(
-      textTheme: GoogleFonts.manropeTextTheme(base.textTheme),
       appBarTheme: const AppBarTheme(centerTitle: true, elevation: 1),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -40,9 +42,9 @@ class AppTheme {
         brightness: Brightness.dark,
       ),
       useMaterial3: true,
+      fontFamily: fontFamily,
     );
     return base.copyWith(
-      textTheme: GoogleFonts.manropeTextTheme(base.textTheme),
       appBarTheme: const AppBarTheme(centerTitle: true, elevation: 1),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

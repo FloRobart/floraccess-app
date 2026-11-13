@@ -6,8 +6,8 @@ class ApiClient {
   ApiClient({
     required this.baseUrl,
     required this.tokenProvider,
-    Future<void> Function()? onUnauthorized,
-  }) : _onUnauthorized = onUnauthorized;
+    this._onUnauthorized,
+  });
 
   final String baseUrl;
   final Future<String?> Function() tokenProvider;
@@ -24,7 +24,7 @@ class ApiClient {
     final uri = _buildUri(path, queryParams);
     final headers = await _headers();
     final response = await http.get(uri, headers: headers);
-    await _handleUnauthorized(response);
+    await _handleUnauthorized(response, headers);
     return response;
   }
 
@@ -37,7 +37,7 @@ class ApiClient {
     final headers = await _headers();
     final encoded = body == null ? null : jsonEncode(body);
     final response = await http.post(uri, body: encoded, headers: headers);
-    await _handleUnauthorized(response);
+    await _handleUnauthorized(response, headers);
     return response;
   }
 
@@ -50,7 +50,7 @@ class ApiClient {
     final headers = await _headers();
     final encoded = body == null ? null : jsonEncode(body);
     final response = await http.put(uri, body: encoded, headers: headers);
-    await _handleUnauthorized(response);
+    await _handleUnauthorized(response, headers);
     return response;
   }
 
@@ -63,15 +63,14 @@ class ApiClient {
     final headers = await _headers();
     final encoded = body == null ? null : jsonEncode(body);
     final response = await http.delete(uri, body: encoded, headers: headers);
-    await _handleUnauthorized(response);
+    await _handleUnauthorized(response, headers);
     return response;
   }
 
   Uri _buildUri(String path, Map<String, String>? queryParams) {
     final normalized = path.startsWith('/') ? path : '/$path';
-    return Uri.parse(
-      '$baseUrl$normalized',
-    ).replace(queryParameters: queryParams);
+    return Uri.parse('$baseUrl$normalized')
+        .replace(queryParameters: queryParams);
   }
 
   Future<Map<String, String>> _headers() async {
@@ -82,9 +81,20 @@ class ApiClient {
     };
   }
 
-  Future<void> _handleUnauthorized(http.Response response) async {
-    if (response.statusCode == 401 && _onUnauthorized != null) {
-      await _onUnauthorized!.call();
+  /// Closes the session when the API refuses its JWT.
+  ///
+  /// Only a request sent with a JWT can mean that the session expired: a 401 answer
+  /// to a request without JWT (a wrong login code) must leave the user on the page
+  /// where he types his code, instead of sending him back to the start of the login.
+  Future<void> _handleUnauthorized(
+    http.Response response,
+    Map<String, String> sentHeaders,
+  ) async {
+    final wasSentWithJwt = sentHeaders.containsKey('Authorization');
+    if (response.statusCode != 401 || !wasSentWithJwt) {
+      return;
     }
+
+    await _onUnauthorized?.call();
   }
 }
