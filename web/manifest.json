@@ -10,38 +10,44 @@
     "prefer_related_applications": false,
     "icons": [
         {
-            "src": "/assets/logo/logo-72.png",
+            "src": "assets/logo/logo-72.png",
             "sizes": "72x72",
-            "type": "image/png",
-            "purpose": "maskable"
+            "type": "image/png"
         },
         {
-            "src": "/assets/logo/logo-96.png",
+            "src": "assets/logo/logo-96.png",
             "sizes": "96x96",
-            "type": "image/png",
-            "purpose": "maskable"
+            "type": "image/png"
         },
         {
-            "src": "/assets/logo/logo-144.png",
+            "src": "assets/logo/logo-144.png",
             "sizes": "144x144",
-            "type": "image/png",
-            "purpose": "maskable"
+            "type": "image/png"
         },
         {
-            "src": "/assets/logo/logo-192.png",
+            "src": "assets/logo/logo-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/logo/logo-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/logo/logo-1024.png",
+            "sizes": "1024x1024",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/logo/logo-maskable-192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "/assets/logo/logo-512.png",
+            "src": "assets/logo/logo-maskable-512.png",
             "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "maskable"
-        },
-        {
-            "src": "/assets/logo/logo-1024.png",
-            "sizes": "1024x1024",
             "type": "image/png",
             "purpose": "maskable"
         }
